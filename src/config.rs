@@ -27,15 +27,15 @@ impl PAGIConfig {
         // Load `.env` if available; ignore error so production env-only works.
         let _ = dotenvy::dotenv();
 
-        let openrouter_api_key = env::var("OPENROUTER_API_KEY")
-            .expect("Missing required env var: OPENROUTER_API_KEY");
+        let openrouter_api_key =
+            env::var("OPENROUTER_API_KEY").expect("Missing required env var: OPENROUTER_API_KEY");
 
         let default_model = env::var("OPENROUTER_DEFAULT_MODEL")
             .unwrap_or_else(|_| "openai/gpt-4o-mini".to_string());
 
         let jira_api_token = env::var("JIRA_API_TOKEN").unwrap_or_default();
-        let jira_base_url = env::var("JIRA_BASE_URL")
-            .unwrap_or_else(|_| "https://jira.example.com".to_string());
+        let jira_base_url =
+            env::var("JIRA_BASE_URL").unwrap_or_else(|_| "https://jira.example.com".to_string());
 
         let crowdstrike_api_token = env::var("CROWDSTRIKE_API_TOKEN").unwrap_or_default();
         let crowdstrike_base_url = env::var("CROWDSTRIKE_BASE_URL")
@@ -51,4 +51,3 @@ impl PAGIConfig {
         }
     }
 }
-

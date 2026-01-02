@@ -1,28 +1,30 @@
-# 🧠🌐 PAGI External API & LLM Provider Library (`pagi-external-api-lib`)
+# PAGI External API & LLM Provider Library (`pagi-external-api-lib`)
 
-Centralized, secure **external network I/O** + **LLM orchestration** for PAGI.
+Centralized **external network I/O** + **LLM orchestration** for PAGI.
 
-This crate is designed to keep your “core logic” clean by putting:
-- 🔐 secret/config loading
-- 🌍 all outbound HTTP calls
-- 🤖 LLM provider orchestration
+This crate is designed to keep “core logic” clean by placing these concerns in one library:
 
-…in one place.
-
----
-
-## ✨ What this crate does
-
-✅ Loads configuration from environment variables (and an optional `.env` file)
-
-✅ Calls **OpenRouter** Chat Completions (`/chat/completions`) asynchronously
-
-✅ Provides placeholder external service clients (Jira, CrowdStrike) to show where
-real integrations will live
+- Config / secret loading
+- Outbound HTTP calls
+- LLM provider orchestration (OpenRouter)
 
 ---
 
-## 🧩 Repository structure
+## What this crate does
+
+- Loads configuration from environment variables (and an optional `.env` file)
+- Calls **OpenRouter** Chat Completions (`/chat/completions`) asynchronously
+- Provides placeholder external service clients (Jira, CrowdStrike) to show where real integrations will live
+
+Non-goals (today):
+
+- A complete Jira/CrowdStrike integration (clients are stubs/placeholders)
+- Streaming chat (SSE)
+- A stable, versioned public API guarantee (pre-1.0)
+
+---
+
+## Repository structure
 
 ```
 .
@@ -43,7 +45,7 @@ Key modules:
 
 ---
 
-## 🚀 Getting started
+## Getting started
 
 ### 1) Install Rust
 
@@ -84,17 +86,24 @@ CROWDSTRIKE_BASE_URL=https://api.crowdstrike.com
 EOF
 ```
 
-✅ Required:
+Required:
+
 - `OPENROUTER_API_KEY`
 
 Optional:
+
 - `OPENROUTER_DEFAULT_MODEL` (defaults to `openai/gpt-4o-mini`)
 - `JIRA_API_TOKEN`, `JIRA_BASE_URL`
 - `CROWDSTRIKE_API_TOKEN`, `CROWDSTRIKE_BASE_URL`
 
+Notes:
+
+- Config loading is intentionally strict: [`PAGIConfig::load()`](src/config.rs:26) panics if `OPENROUTER_API_KEY` is missing.
+- The placeholder clients ([`JiraClient`](src/api_clients.rs:5), [`CrowdstrikeClient`](src/api_clients.rs:33)) expect a full [`PAGIConfig`](src/config.rs:8), so `OPENROUTER_API_KEY` must be present even if you only intend to use the placeholders.
+
 ---
 
-## 🧪 Build / run checks
+## Build / run checks
 
 ```bash
 cargo check
@@ -102,7 +111,16 @@ cargo check
 
 ---
 
-## 🧑‍💻 Usage examples
+## Public API (quick overview)
+
+Re-exported from [`src/lib.rs`](src/lib.rs:1):
+
+- [`PAGIConfig`](src/config.rs:8) — loads config/secret values from `.env` + environment variables
+- [`LLMProvider`](src/llm_provider.rs:6) — OpenRouter chat completions wrapper
+- [`JiraClient`](src/api_clients.rs:5) — placeholder
+- [`CrowdstrikeClient`](src/api_clients.rs:33) — placeholder
+
+## Usage examples
 
 ### Example: Call OpenRouter to generate a response
 
@@ -111,6 +129,8 @@ use pagi_external_api_lib::LLMProvider;
 
 #[tokio::main]
 async fn main() {
+    // `LLMProvider::new()` loads env config immediately; it will panic if
+    // OPENROUTER_API_KEY is missing.
     let llm = LLMProvider::new();
 
     let text = llm
@@ -140,9 +160,24 @@ async fn main() {
 }
 ```
 
+### Example: Use as a dependency
+
+If you want to use this crate from another repository/app, add it to your `Cargo.toml` via Git:
+
+```toml
+[dependencies]
+pagi-external-api-lib = { git = "https://github.com/c04ch1337/pagi-external-api-lib.git", branch = "main" }
+```
+
+If you prefer the CLI:
+
+```bash
+cargo add pagi-external-api-lib --git https://github.com/c04ch1337/pagi-external-api-lib.git --branch main
+```
+
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ### High-level view (crate responsibilities)
 
@@ -194,7 +229,7 @@ flowchart LR
 
 ---
 
-## 📦 Dependencies
+## Dependencies
 
 From `Cargo.toml`:
 
@@ -208,9 +243,9 @@ From `Cargo.toml`:
 
 ---
 
-## 🧰 Testing & debugging
+## Testing & debugging
 
-### ✅ Testing
+### Testing
 
 There are currently no dedicated unit/integration tests.
 
@@ -223,7 +258,7 @@ Run tests:
 cargo test
 ```
 
-### 🐛 Debugging tips
+### Debugging tips
 
 Common issues:
 
@@ -247,7 +282,7 @@ cargo fmt
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome—keep changes clean and reviewable.
 
@@ -273,33 +308,32 @@ cargo clippy -- -D warnings
 
 ---
 
-## 🛣️ Roadmap / future plans
+## Roadmap / future plans
 
 Planned improvements (in rough priority order):
 
-### 🤖 LLM provider improvements
+### LLM provider improvements
 - Provider abstraction trait (OpenRouter, OpenAI, etc.)
 - Better error types (avoid leaking secrets, include context)
 - Retries with exponential backoff
 - Timeouts, rate limiting, and circuit breaking
 - Streaming responses (SSE) for chat UX
 
-### 🔐 Security improvements
+### Security improvements
 - Secret redaction utilities
 - Stronger config validation (explicit “required vs optional” schema)
 - Support for external secret managers (Vault, AWS SSM, etc.)
 
-### 🌍 External API clients
+### External API clients
 - Real Jira REST client (issue create, status transitions, comments)
 - Real CrowdStrike workflows (host lookup, containment actions)
 
-### 🧪 Testing
+### Testing
 - Integration tests with mock servers
 - Contract tests for payload formats
 
 ---
 
-## 📄 License
+## License
 
 License is currently **TBD**.
-

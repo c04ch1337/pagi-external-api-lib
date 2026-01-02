@@ -94,4 +94,3 @@ struct OpenRouterChoice {
 struct OpenRouterChoiceMessage {
     content: String,
 }
-
