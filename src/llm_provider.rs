@@ -66,6 +66,12 @@ impl LLMProvider {
     }
 }
 
+impl Default for LLMProvider {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Debug, Serialize)]
 struct OpenRouterChatCompletionsRequest<'a> {
     model: &'a str,

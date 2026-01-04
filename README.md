@@ -86,6 +86,17 @@ CROWDSTRIKE_BASE_URL=https://api.crowdstrike.com
 EOF
 ```
 
+#### Environment variable reference
+
+| Variable | Required | Default | Used by |
+|---|:---:|---|---|
+| `OPENROUTER_API_KEY` | ✅ | (none) | [`PAGIConfig`](src/config.rs:8), [`LLMProvider`](src/llm_provider.rs:6) |
+| `OPENROUTER_DEFAULT_MODEL` | ❌ | `openai/gpt-4o-mini` | [`LLMProvider`](src/llm_provider.rs:6) |
+| `JIRA_API_TOKEN` | ❌ | empty string | [`JiraClient`](src/api_clients.rs:5) (placeholder) |
+| `JIRA_BASE_URL` | ❌ | `https://jira.example.com` | [`JiraClient`](src/api_clients.rs:5) (placeholder) |
+| `CROWDSTRIKE_API_TOKEN` | ❌ | empty string | [`CrowdstrikeClient`](src/api_clients.rs:33) (placeholder) |
+| `CROWDSTRIKE_BASE_URL` | ❌ | `https://api.crowdstrike.com` | [`CrowdstrikeClient`](src/api_clients.rs:33) (placeholder) |
+
 Required:
 
 - `OPENROUTER_API_KEY`
@@ -101,12 +112,33 @@ Notes:
 - Config loading is intentionally strict: [`PAGIConfig::load()`](src/config.rs:26) panics if `OPENROUTER_API_KEY` is missing.
 - The placeholder clients ([`JiraClient`](src/api_clients.rs:5), [`CrowdstrikeClient`](src/api_clients.rs:33)) expect a full [`PAGIConfig`](src/config.rs:8), so `OPENROUTER_API_KEY` must be present even if you only intend to use the placeholders.
 
+### 4) Basic verification (no code changes)
+
+Run a quick build check:
+
+```bash
+cargo check
+```
+
+If you plan to run the OpenRouter example in the README below, confirm you have:
+
+- a valid `OPENROUTER_API_KEY`
+- outbound network access
+
 ---
 
 ## Build / run checks
 
 ```bash
 cargo check
+```
+
+Optional but recommended:
+
+```bash
+cargo fmt
+cargo clippy -- -D warnings
+cargo test
 ```
 
 ---
@@ -145,6 +177,11 @@ async fn main() {
     println!("LLM response: {text}");
 }
 ```
+
+#### Security note
+
+Avoid logging request headers or full config objects that may include secrets.
+If you add structured logging later, ensure `OPENROUTER_API_KEY` is always redacted.
 
 ### Example: Use placeholder Jira client
 
